@@ -1,0 +1,33 @@
+body {
+    background-color: #171717;
+    margin: 0 auto;
+}
+
+.container-something {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.row {
+    justify-content: center;
+    display: flex;
+    font-size: 25px;
+    color: #A3A3A3
+}
+
+.row {
+    animation: fade 0.9s infinite;
+}
+
+@keyframes fade {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.under-text {
+    display: flex;
+    margin-top: 100px;
+    font-size: 20px;
+}
