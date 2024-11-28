@@ -31,3 +31,14 @@ body {
     margin-top: 100px;
     font-size: 20px;
 }
+
+#canvas-container {
+    display: none;
+    justify-content: center;
+}
+
+canvas {
+    display: block;
+    margin: auto;
+    margin-top: 2%;
+}
