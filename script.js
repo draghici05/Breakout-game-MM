@@ -2,7 +2,7 @@ let level = 1;
 let brickArray = [];
 let score = 0;
 let lives = 3;
-let speed = 5;
+let speed = 2;
 let paddle = null;
 let ball = null;
 let sound = new Audio('assets/Death.mp3');
@@ -48,7 +48,7 @@ window.onload = function () {
         lives = 3;
         speed = 2;
         ball = null;
-        music.currentTime = 0; // Restart the music
+        music.currentTime = 0;
         music.play();
         initializeBricks();
         generateScore();
@@ -60,9 +60,11 @@ window.onload = function () {
         ctx.fillStyle = '#FF5047';
         ctx.textAlign = 'center';
         ctx.font = '45px Comic Sans MS';
+        ball = null;
 
         ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 25);
         ctx.fillText('Press SPACE to restart', canvas.width / 2, canvas.height / 2 + 25);
+        ctx.fillText('Score: ' + score, canvas.width / 2, canvas.height / 2 + 75);
 
         function handleSpacePress(e) {
             if (e.code === 'Space') {
@@ -84,7 +86,7 @@ window.onload = function () {
         ctx.textAlign = 'left';
         ctx.fillText('Score: ' + score, 20, 20);
         ctx.fillText('Lives: ' + lives, canvas.width - 80, 20);
-        ctx.fillText('Level: ' + level, canvas.width / 2, 20);
+        ctx.fillText('Level: ' + level, canvas.width / 2 - 20, 20);
     }
 
     function nextLevel() {
@@ -100,8 +102,7 @@ window.onload = function () {
         let brickWidth = 64.5;
         let brickHeight = 20;
         let brickColumn = Math.floor((canvas.width - 16 - 10) / brickWidth);
-        console.log(brickColumn);
-        let brickRow = 5 * level;
+        let brickRow = Math.min(20, 5 * level);
         let brickX = 8;
         let brickY = 8 + 15 + 8;
         brickArray = [];
@@ -144,7 +145,7 @@ window.onload = function () {
     let previousPaddleY = 500;
 
     function initializePaddle(event) {
-        let paddleWidth = 100 / level;
+        let paddleWidth = Math.max(20, 100 - level * 10);
         let paddleHeight = 10;
 
         paddle = {
@@ -192,7 +193,7 @@ window.onload = function () {
         ball = null;
         speed = 2;
         if (lives > 0) {
-            seTimeout(() => {
+            setTimeout(() => {
                 initializeBall(paddle);
             }, 1000);
         } else {
@@ -248,7 +249,6 @@ window.onload = function () {
             }
         }
 
-
         ctx.beginPath();
         ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
         ctx.fillStyle = 'white';
@@ -271,6 +271,9 @@ window.onload = function () {
             animateBall();
         }
 
+        if(lives <= 0){
+            gameOver();
+        }
         if (brickArray.length == 0) {
             nextLevel();
         }
