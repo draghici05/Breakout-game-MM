@@ -2,13 +2,16 @@ let level = 1;
 let brickArray = [];
 let score = 0;
 let lives = 3;
-let speed = 5;
+let speed = 2;
 let paddle = null;
 let ball = null;
-let sound = new Audio('assets/Death.mp3'); 
+let sound = new Audio('assets/Death.mp3');
 sound.volume = 0.1;
 let music = new Audio('assets/OST.mp3');
 music.volume = 0.1;
+let brickSound = new Audio('assets/pop-39222.mp3');
+brickSound.volume = 0.1;
+let gameOverState = false;
 
 window.onload = function () {
 
@@ -27,10 +30,10 @@ window.onload = function () {
         canvasContainer.style.display = 'block';
         canvasContainer.appendChild(canvas);
         startGame();
-        music.play();
     });
 
     function startGame() {
+        music.play();
         resetGame();
         initializeBricks();
         generateScore();
@@ -40,51 +43,68 @@ window.onload = function () {
     }
 
     function resetGame() {
+        gameOverState = false;
         level = 1;
         brickArray = [];
         score = 0;
         lives = 3;
         speed = 2;
         ball = null;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        music.currentTime = 0;
+        music.play();
         initializeBricks();
+        generateScore();
     }
 
     function gameOver() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
         ctx.fillStyle = '#FF5047';
         ctx.textAlign = 'center';
         ctx.font = '45px Comic Sans MS';
-    
+        ball = null;
+
         ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 25);
         ctx.fillText('Press SPACE to restart', canvas.width / 2, canvas.height / 2 + 25);
-        
-        document.addEventListener('keydown', restartGame); //restart game bugged
-    }   
-    
+        ctx.fillText('Score: ' + score, canvas.width / 2, canvas.height / 2 + 75);
+
+        function handleSpacePress(e) {
+            if (e.code === 'Space') {
+                gameOverState = false;
+                resetGame();
+                document.removeEventListener('keydown', handleSpacePress);
+            }
+        }
+        if (!gameOverState) {
+            document.addEventListener('keydown', handleSpacePress);
+            gameOverState = true;
+        }
+
+    }
+
     function generateScore() {
         ctx.font = '15px Arial';
         ctx.fillStyle = 'white';
+        ctx.textAlign = 'left';
         ctx.fillText('Score: ' + score, 20, 20);
         ctx.fillText('Lives: ' + lives, canvas.width - 80, 20);
-        ctx.fillText('Level: ' + level, canvas.width/2, 20);
+        ctx.fillText('Level: ' + level, canvas.width / 2 - 20, 20);
     }
 
-    function nextLevel(){
+    function nextLevel() {
         level++;
         speed = 2;
         resetBall();
         initializeBricks();
-        initializeBall(paddle);
+        generateScore();
     }
 
     function initializeBricks() {
 
         let brickWidth = 64.5;
         let brickHeight = 20;
-        let brickColumn = (canvas.width - 16) / brickWidth;
-        let brickRow = 5 * level;
+        let brickColumn = Math.floor((canvas.width - 16 - 10) / brickWidth);
+        let brickRow = Math.min(20, 5 * level);
         let brickX = 8;
         let brickY = 8 + 15 + 8;
         brickArray = [];
@@ -127,7 +147,7 @@ window.onload = function () {
     let previousPaddleY = 500;
 
     function initializePaddle(event) {
-        let paddleWidth = 100 / level;
+        let paddleWidth = Math.max(20, 100 - level * 10);
         let paddleHeight = 10;
 
         paddle = {
@@ -189,7 +209,12 @@ window.onload = function () {
         ball.x += ball.velocityX * speed;
         ball.y += ball.velocityY * speed;
 
-        if (ball.x < 8 || ball.x + 8 > canvas.width) {
+        let ballLeft = ball.x - ball.radius;
+        let ballRight = ball.x + ball.radius;
+        let ballTop = ball.y - ball.radius;
+        let ballBottom = ball.y + ball.radius;
+
+        if (ball.x < 8 || ball.x + 8 > canvas.width) { // 8 Cu
             ball.velocityX = -ball.velocityX;
         }
         if (ball.y < 8) {
@@ -209,17 +234,24 @@ window.onload = function () {
         }
 
         for (let i = 0; i < brickArray.length; i++) {
-            if (brickArray[i].break == false && ball.x > brickArray[i].x && ball.x < brickArray[i].x + brickArray[i].width
-                && ball.y + 8 > brickArray[i].y && ball.y < brickArray[i].y + brickArray[i].height) {
+            let brickLeft = brickArray[i].x;
+            let brickRight = brickArray[i].x + brickArray[i].width;
+            let brickTop = brickArray[i].y;
+            let brickBottom = brickArray[i].y + brickArray[i].height;
+
+            if (!brickArray[i].break &&
+                ballLeft < brickRight && ballRight > brickLeft &&
+                ballTop < brickBottom && ballBottom > brickTop) {
                 ball.velocityY = -ball.velocityY;
                 brickArray[i].break = true;
                 score += brickArray[i].points;
                 brickArray.splice(i, 1);
 
                 speed = speed + score / 10000;
+
+                brickSound.play();
             }
         }
-
 
         ctx.beginPath();
         ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
@@ -227,12 +259,6 @@ window.onload = function () {
         ctx.fill();
     }
 
-    function restartGame(event) { //restart game bugged
-        if (event.code === 'Space') {
-            document.removeEventListener('keydown', restartGame);
-            startGame();
-        } 
-    }
 
     function game() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -249,11 +275,10 @@ window.onload = function () {
             animateBall();
         }
 
-        if (lives == 0){  // game over condition
+        if(lives <= 0){
             gameOver();
         }
-
-        if (brickArray.length == 0) {  
+        if (brickArray.length == 0) {
             nextLevel();
         }
 
