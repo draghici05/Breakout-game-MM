@@ -64,14 +64,17 @@ window.onload = function () {
         ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 25);
         ctx.fillText('Press SPACE to restart', canvas.width / 2, canvas.height / 2 + 25);
 
-        document.removeEventListener('keydown', resetGame);
-        document.addEventListener('keydown', function (e) {
-            if (e.code === 'Space' && !gameOverState) {
-                gameOverState = true;
+        function handleSpacePress(e) {
+            if (e.code === 'Space') {
+                gameOverState = false;
                 resetGame();
-                document.removeEventListener('keydown', resetGame);
+                document.removeEventListener('keydown', handleSpacePress);
             }
-        });
+        }
+        if (!gameOverState) {
+            document.addEventListener('keydown', handleSpacePress);
+            gameOverState = true;
+        }
 
     }
 
