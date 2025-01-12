@@ -8,7 +8,7 @@ window.onload = function () {
     let brickArray = [];
     let score = 0;
     let lives = 3;
-    let player = null;
+    let paddle = null;
     let ball = null;
 
     function removeItems() {
@@ -23,46 +23,31 @@ window.onload = function () {
         startGame();
     });
 
-
     function startGame() {
-        // let canvas = document.querySelector('canvas');
-        // let ctx = canvas.getContext('2d');
         resetGame();
-        initializePaddle({ clientX: canvas.width / 2 });
         displayBricks();
-
-        // ctx.fillStyle = 'white';
-        // ctx.fillRect(player.x, player.y, player.width, player.height);
-
-
-        // ctx.fillStyle = 'green';
-        // for (let i = 0; i < brickArray.length; i++) {
-        //     let brick = brickArray[i]
-        //     if (!brick.break) {
-        //         ctx.fillRect(brick.x, brick.y, brick.width, brick.height)
-        //     }
-        // }
-
-        // function gameOver() { //asta idk nu trebuie neap si nu e bine oricum
-        //     let canvas = document.querySelector('canvas');
-        //     let ctx = canvas.getContext('2d');
-        //     ctx.clearRect(0, 0, canvas.width, canvas.height);
-        //     ctx.font = '30px Arial';
-        //     ctx.fillStyle = 'red';
-        //     ctx.fillText('Game Over', canvas.width/2 - 100, canvas.height/2);
-        // }
-
         generateScore();
         canvasContainer.addEventListener('mousemove', initializePaddle);
-        canvasContainer.addEventListener('mousemove', moveBall);
+        requestAnimationFrame(game);
+
     }
+
 
     function resetGame() {
         level = 1;
         brickArray = [];
         score = 0;
         lives = 3;
+        ball = null;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function gameOver() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = '30px Arial';
+        ctx.fillStyle = 'red';
+        ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
+        resetGame();
     }
 
     function generateScore() {
@@ -74,8 +59,8 @@ window.onload = function () {
 
     function displayBricks() {
 
-        let brickWidth = 49.5;
-        let brickHeight = 10;
+        let brickWidth = 64.5;
+        let brickHeight = 15;
         let brickColumn = (canvas.width - 16) / brickWidth;
         let brickRow = 5 * level;
         let brickX = 8;
@@ -91,19 +76,20 @@ window.onload = function () {
                     y: brickY + row * brickHeight + row * 10,
                     width: brickWidth,
                     height: brickHeight,
-                    break: false
+                    break: false,
+                    points: 10 * level
                 }
                 brickArray.push(brick);
             }
         }
 
         for (let i = 0; i < brickArray.length; i++) {
-            let brick = brickArray[i];
+            if (brickArray[i].break == false) {
             ctx.fillStyle = brickColors[i % brickColors.length];
-            ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+            ctx.fillRect(brickArray[i].x, brickArray[i].y, brickArray[i].width, brickArray[i].height);
         }
     }
-
+}
 
     let previousPaddleX = 500;
     let previousPaddleY = 500;
@@ -112,7 +98,7 @@ window.onload = function () {
         let paddleWidth = 100 / level;
         let paddleHeight = 10;
 
-        let paddle = {
+        paddle = {
             x: event.clientX - canvas.offsetLeft - paddleWidth / 2,
             y: canvas.height - paddleHeight - 8,
             width: paddleWidth,
@@ -135,29 +121,85 @@ window.onload = function () {
 
         previousPaddleX = paddle.x;
         previousPaddleY = paddle.y;
+        initializeBall(paddle);
 
     }
 
-    let previousBallX = 500;
-    let previousBallY = 500;
+    function initializeBall(paddle) {
+        setTimeout(() => {
+            if (!ball) {
+                ball = {
+                    x: paddle.x + paddle.width / 2,
+                    y: paddle.y - 10,
+                    radius: 10,
+                    velocityX: 2, //initial velocities
+                    velocityY: -2
+                };
+            }
+        }, 2);
 
-    function moveBall(event) {
-        let ballRadius = 8;
-        let ball = {
-            x: event.clientX - canvas.offsetLeft,
-            y: canvas.height - 20 - ballRadius,
-            radius: ballRadius
+    }
+
+    function animateBall() {
+        ball.x += ball.velocityX;
+        ball.y += ball.velocityY;
+
+        if (ball.x < 8 || ball.x + 8 > canvas.width) {
+            ball.velocityX = -ball.velocityX;
+        } else
+            if (ball.y < 8) {
+                ball.velocityY = -ball.velocityY;
+            } else
+                if (ball.y > canvas.height) {  // need working here
+                    lives--;
+                    ball = null;
+                    initializePaddle();
+                }
+
+        if (ball.x > paddle.x && ball.x < paddle.x + paddle.width && ball.y + 8 > paddle.y) {
+            ball.velocityY = -ball.velocityY;
         }
 
-        ctx.clearRect(previousBallX - ballRadius - 1, previousBallY - ballRadius - 1, ballRadius * 2 + 2, ballRadius * 2 + 2);
-        ctx.fillStyle = 'white';
+        for (let i = 0; i < brickArray.length; i++) {
+            if (brickArray[i].break == false && ball.x > brickArray[i].x && ball.x < brickArray[i].x + brickArray[i].width
+                && ball.y + 8 > brickArray[i].y && ball.y < brickArray[i].y + brickArray[i].height) {
+                ball.velocityY = -ball.velocityY;
+                brickArray[i].break = true;
+                score += brickArray[i].points;
+                brickArray.splice(i, 1);
+            }
+        }
+
+
         ctx.beginPath();
         ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'white';
         ctx.fill();
-
-        previousBallX = ball.x;
-        previousBallY = ball.y;
     }
 
+    function game() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        displayBricks();
+        generateScore();
+
+        if (paddle) {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+        }
+
+        if (ball) {
+            animateBall();
+        }
+
+        if (lives == 0)  // game over condition
+            gameOver();
+
+        if (brickArray.length == 0) {  // next lvl condition
+            level++;
+            startGame();
+        }
+
+        requestAnimationFrame(game);
+    }
 }
