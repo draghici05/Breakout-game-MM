@@ -9,9 +9,6 @@ let sound = new Audio('assets/Death.mp3');
 sound.volume = 0.1;
 let music = new Audio('assets/OST.mp3');
 music.volume = 0.1;
-let brickSound = new Audio('assets/pop-39222.mp3');
-brickSound.volume = 0.1;
-let gameOverState = false;
 
 window.onload = function () {
 
