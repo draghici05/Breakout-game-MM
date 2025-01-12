@@ -25,7 +25,7 @@ window.onload = function () {
 
     function startGame() {
         resetGame();
-        displayBricks();
+        initializeBricks();
         generateScore();
         canvasContainer.addEventListener('mousemove', initializePaddle);
         requestAnimationFrame(game);
@@ -57,7 +57,7 @@ window.onload = function () {
         ctx.fillText('Lives: ' + lives, canvas.width - 100 + 10, 20);
     }
 
-    function displayBricks() {
+    function initializeBricks() {
 
         let brickWidth = 64.5;
         let brickHeight = 15;
@@ -77,7 +77,8 @@ window.onload = function () {
                     width: brickWidth,
                     height: brickHeight,
                     break: false,
-                    points: 10 * level
+                    points: 10 * (brickRow - row),
+                    color: brickColors[row % brickColors.length]
                 }
                 brickArray.push(brick);
             }
@@ -85,11 +86,22 @@ window.onload = function () {
 
         for (let i = 0; i < brickArray.length; i++) {
             if (brickArray[i].break == false) {
-            ctx.fillStyle = brickColors[i % brickColors.length];
-            ctx.fillRect(brickArray[i].x, brickArray[i].y, brickArray[i].width, brickArray[i].height);
+                ctx.fillStyle = brickArray[i].color;
+                ctx.fillRect(brickArray[i].x, brickArray[i].y, brickArray[i].width, brickArray[i].height);
+            }
         }
     }
-}
+
+    function displayBricks() {
+        for (let i = 0; i < brickArray.length; i++) {
+            if (brickArray[i].break == false) {
+                ctx.fillStyle = brickArray[i].color;
+                ctx.fillRect(brickArray[i].x, brickArray[i].y, brickArray[i].width, brickArray[i].height);
+            }
+        }
+    }
+
+
 
     let previousPaddleX = 500;
     let previousPaddleY = 500;
@@ -166,7 +178,6 @@ window.onload = function () {
                 ball.velocityY = -ball.velocityY;
                 brickArray[i].break = true;
                 score += brickArray[i].points;
-                brickArray.splice(i, 1);
             }
         }
 
