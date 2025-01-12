@@ -17,6 +17,8 @@ window.onload = function () {
     let canvas = document.querySelector('canvas');
     let ctx = canvas.getContext('2d');
     let button = document.getElementById('start-button');
+    let canvasWidth = canvas.width;
+    let canvasHeight = canvas.height;
 
     function removeItems() {
         document.body.innerHTML = '';
@@ -48,10 +50,8 @@ window.onload = function () {
         lives = 3;
         speed = 2;
         ball = null;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        music.currentTime = 0; // Restart the music
         music.play();
-        initializeBricks();
-        generateScore();
     }
 
     function gameOver() {
@@ -81,9 +81,9 @@ window.onload = function () {
     function generateScore() {
         ctx.font = '15px Arial';
         ctx.fillStyle = 'white';
-        ctx.fillText('Score: ' + score, 20, 20); 
-        ctx.fillText('Lives: ' + lives, canvas.width - 80, 20);
-        ctx.fillText('Level: ' + level, canvas.width / 2, 20);
+        ctx.fillText('Score: ' + score, 20, 20);
+        ctx.fillText('Lives: ' + lives, canvasWidth - 80, 20);
+        ctx.fillText('Level: ' + level, canvasWidth / 2, 20);
     }
 
     function nextLevel() {
@@ -96,7 +96,7 @@ window.onload = function () {
 
     function initializeBricks() {
 
-        let brickWidth = 64.5;
+        let brickWidth = 600//64.5;
         let brickHeight = 20;
         let brickColumn = (canvas.width - 16) / brickWidth;
         let brickRow = 5 * level;
@@ -233,10 +233,10 @@ window.onload = function () {
             let brickRight = brickArray[i].x + brickArray[i].width;
             let brickTop = brickArray[i].y;
             let brickBottom = brickArray[i].y + brickArray[i].height;
-            
-        if (!brickArray[i].break &&
-             ballLeft < brickRight && ballRight > brickLeft &&
-             ballTop < brickBottom && ballBottom > brickTop) {
+
+            if (!brickArray[i].break &&
+                ballLeft < brickRight && ballRight > brickLeft &&
+                ballTop < brickBottom && ballBottom > brickTop) {
                 ball.velocityY = -ball.velocityY;
                 brickArray[i].break = true;
                 score += brickArray[i].points;
