@@ -5,7 +5,7 @@ let lives = 3;
 let speed = 5;
 let paddle = null;
 let ball = null;
-let sound = new Audio('assets/Death.mp3'); 
+let sound = new Audio('assets/Death.mp3');
 sound.volume = 0.1;
 let music = new Audio('assets/OST.mp3');
 music.volume = 0.1;
@@ -27,10 +27,10 @@ window.onload = function () {
         canvasContainer.style.display = 'block';
         canvasContainer.appendChild(canvas);
         startGame();
-        music.play();
     });
 
     function startGame() {
+        music.play();
         resetGame();
         initializeBricks();
         generateScore();
@@ -47,31 +47,45 @@ window.onload = function () {
         speed = 2;
         ball = null;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        music.play();
         initializeBricks();
     }
 
     function gameOver() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
         ctx.fillStyle = '#FF5047';
         ctx.textAlign = 'center';
         ctx.font = '45px Comic Sans MS';
-    
+
         ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 25);
         ctx.fillText('Press SPACE to restart', canvas.width / 2, canvas.height / 2 + 25);
-        
-        document.addEventListener('keydown', restartGame); //restart game bugged
-    }   
-    
+
+
+        document.addEventListener('keydown', function (e) {
+            if (e.code === 'Space') {
+                resetGame();
+            }
+        });
+        document.addEventListener('keyup', function (e) {
+            if (e.code === 'Space') {
+                resetGame();
+            }
+        });
+
+        document.removeEventListener('keydown', resetGame);
+        document.removeEventListener('keyup', resetGame);
+    }
+
     function generateScore() {
         ctx.font = '15px Arial';
         ctx.fillStyle = 'white';
         ctx.fillText('Score: ' + score, 20, 20);
         ctx.fillText('Lives: ' + lives, canvas.width - 80, 20);
-        ctx.fillText('Level: ' + level, canvas.width/2, 20);
+        ctx.fillText('Level: ' + level, canvas.width / 2, 20);
     }
 
-    function nextLevel(){
+    function nextLevel() {
         level++;
         speed = 2;
         resetBall();
@@ -227,12 +241,6 @@ window.onload = function () {
         ctx.fill();
     }
 
-    function restartGame(event) { //restart game bugged
-        if (event.code === 'Space') {
-            document.removeEventListener('keydown', restartGame);
-            startGame();
-        } 
-    }
 
     function game() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -249,11 +257,11 @@ window.onload = function () {
             animateBall();
         }
 
-        if (lives == 0){  // game over condition
+        if (lives == 0) {  // game over condition
             gameOver();
         }
 
-        if (brickArray.length == 0) {  
+        if (brickArray.length == 0) {
             nextLevel();
         }
 
