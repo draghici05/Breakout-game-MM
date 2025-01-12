@@ -17,8 +17,6 @@ window.onload = function () {
     let canvas = document.querySelector('canvas');
     let ctx = canvas.getContext('2d');
     let button = document.getElementById('start-button');
-    let canvasWidth = canvas.width;
-    let canvasHeight = canvas.height;
 
     function removeItems() {
         document.body.innerHTML = '';
@@ -99,7 +97,7 @@ window.onload = function () {
 
     function initializeBricks() {
 
-        let brickWidth = 300;
+        let brickWidth = 64.5;
         let brickHeight = 20;
         let brickColumn = Math.floor((canvas.width - 16 - 10) / brickWidth);
         console.log(brickColumn);
@@ -192,7 +190,7 @@ window.onload = function () {
 
     function resetBall() {
         ball = null;
-        speed = 2;t
+        speed = 2;
         if (lives > 0) {
             seTimeout(() => {
                 initializeBall(paddle);
