@@ -204,7 +204,12 @@ window.onload = function () {
         ball.x += ball.velocityX * speed;
         ball.y += ball.velocityY * speed;
 
-        if (ball.x < 8 || ball.x + 8 > canvas.width) {
+        let ballLeft = ball.x - ball.radius;
+        let ballRight = ball.x + ball.radius;
+        let ballTop = ball.y - ball.radius;
+        let ballBottom = ball.y + ball.radius;
+
+        if (ball.x < 8 || ball.x + 8 > canvas.width) { // 8 Cu
             ball.velocityX = -ball.velocityX;
         }
         if (ball.y < 8) {
@@ -224,8 +229,14 @@ window.onload = function () {
         }
 
         for (let i = 0; i < brickArray.length; i++) {
-            if (brickArray[i].break == false && ball.x > brickArray[i].x && ball.x < brickArray[i].x + brickArray[i].width
-                && ball.y + 8 > brickArray[i].y && ball.y < brickArray[i].y + brickArray[i].height) {
+            let brickLeft = brickArray[i].x;
+            let brickRight = brickArray[i].x + brickArray[i].width;
+            let brickTop = brickArray[i].y;
+            let brickBottom = brickArray[i].y + brickArray[i].height;
+            
+        if (!brickArray[i].break &&
+             ballLeft < brickRight && ballRight > brickLeft &&
+             ballTop < brickBottom && ballBottom > brickTop) {
                 ball.velocityY = -ball.velocityY;
                 brickArray[i].break = true;
                 score += brickArray[i].points;
