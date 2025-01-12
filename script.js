@@ -52,6 +52,8 @@ window.onload = function () {
         ball = null;
         music.currentTime = 0; // Restart the music
         music.play();
+        initializeBricks();
+        generateScore();
     }
 
     function gameOver() {
@@ -81,9 +83,10 @@ window.onload = function () {
     function generateScore() {
         ctx.font = '15px Arial';
         ctx.fillStyle = 'white';
+        ctx.textAlign = 'left';
         ctx.fillText('Score: ' + score, 20, 20);
-        ctx.fillText('Lives: ' + lives, canvasWidth - 80, 20);
-        ctx.fillText('Level: ' + level, canvasWidth / 2, 20);
+        ctx.fillText('Lives: ' + lives, canvas.width - 80, 20);
+        ctx.fillText('Level: ' + level, canvas.width / 2, 20);
     }
 
     function nextLevel() {
@@ -96,9 +99,10 @@ window.onload = function () {
 
     function initializeBricks() {
 
-        let brickWidth = 600//64.5;
+        let brickWidth = 300;
         let brickHeight = 20;
-        let brickColumn = (canvas.width - 16) / brickWidth;
+        let brickColumn = Math.floor((canvas.width - 16 - 10) / brickWidth);
+        console.log(brickColumn);
         let brickRow = 5 * level;
         let brickX = 8;
         let brickY = 8 + 15 + 8;
@@ -188,9 +192,9 @@ window.onload = function () {
 
     function resetBall() {
         ball = null;
-        speed = 2;
+        speed = 2;t
         if (lives > 0) {
-            setTimeout(() => {
+            seTimeout(() => {
                 initializeBall(paddle);
             }, 1000);
         } else {
@@ -267,10 +271,6 @@ window.onload = function () {
 
         if (ball) {
             animateBall();
-        }
-
-        if (lives == 0) {  // game over condition
-            gameOver();
         }
 
         if (brickArray.length == 0) {
