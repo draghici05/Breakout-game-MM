@@ -9,6 +9,7 @@ let sound = new Audio('assets/Death.mp3');
 sound.volume = 0.1;
 let music = new Audio('assets/OST.mp3');
 music.volume = 0.1;
+let gameOverState = false;
 
 window.onload = function () {
 
@@ -40,6 +41,7 @@ window.onload = function () {
     }
 
     function resetGame() {
+        gameOverState = false;
         level = 1;
         brickArray = [];
         score = 0;
@@ -49,6 +51,7 @@ window.onload = function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         music.play();
         initializeBricks();
+        generateScore();
     }
 
     function gameOver() {
@@ -61,26 +64,21 @@ window.onload = function () {
         ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 25);
         ctx.fillText('Press SPACE to restart', canvas.width / 2, canvas.height / 2 + 25);
 
-
-        document.addEventListener('keydown', function (e) {
-            if (e.code === 'Space') {
-                resetGame();
-            }
-        });
-        document.addEventListener('keyup', function (e) {
-            if (e.code === 'Space') {
-                resetGame();
-            }
-        });
-
         document.removeEventListener('keydown', resetGame);
-        document.removeEventListener('keyup', resetGame);
+        document.addEventListener('keydown', function (e) {
+            if (e.code === 'Space' && !gameOverState) {
+                gameOverState = true;
+                resetGame();
+                document.removeEventListener('keydown', resetGame);
+            }
+        });
+
     }
 
     function generateScore() {
         ctx.font = '15px Arial';
         ctx.fillStyle = 'white';
-        ctx.fillText('Score: ' + score, 20, 20);
+        ctx.fillText('Score: ' + score, 20, 20); 
         ctx.fillText('Lives: ' + lives, canvas.width - 80, 20);
         ctx.fillText('Level: ' + level, canvas.width / 2, 20);
     }
@@ -90,7 +88,7 @@ window.onload = function () {
         speed = 2;
         resetBall();
         initializeBricks();
-        initializeBall(paddle);
+        generateScore();
     }
 
     function initializeBricks() {
