@@ -1,15 +1,17 @@
+let level = 1;
+let brickArray = [];
+let score = 0;
+let lives = 3;
+let speed = 5;
+let paddle = null;
+let ball = null;
+
 window.onload = function () {
 
     let canvasContainer = document.getElementById('canvas-container');
     let canvas = document.querySelector('canvas');
     let ctx = canvas.getContext('2d');
     let button = document.getElementById('start-button');
-    let level = 1;
-    let brickArray = [];
-    let score = 0;
-    let lives = 3;
-    let paddle = null;
-    let ball = null;
 
     function removeItems() {
         document.body.innerHTML = '';
@@ -32,14 +34,15 @@ window.onload = function () {
 
     }
 
-
     function resetGame() {
         level = 1;
         brickArray = [];
         score = 0;
         lives = 3;
+        speed = 2;
         ball = null;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        initializeBricks();
     }
 
     function gameOver() {
@@ -54,7 +57,16 @@ window.onload = function () {
         ctx.font = '15px Arial';
         ctx.fillStyle = 'white';
         ctx.fillText('Score: ' + score, 20, 20);
-        ctx.fillText('Lives: ' + lives, canvas.width - 100 + 10, 20);
+        ctx.fillText('Lives: ' + lives, canvas.width - 80, 20);
+        ctx.fillText('Level: ' + level, canvas.width/2, 20);
+    }
+
+    function nextLevel(){
+        level++;
+        speed = 2;
+        resetBall();
+        initializeBricks();
+        initializeBall(paddle);
     }
 
     function initializeBricks() {
@@ -101,8 +113,6 @@ window.onload = function () {
         }
     }
 
-
-
     let previousPaddleX = 500;
     let previousPaddleY = 500;
 
@@ -143,33 +153,48 @@ window.onload = function () {
                 ball = {
                     x: paddle.x + paddle.width / 2,
                     y: paddle.y - 10,
-                    radius: 10,
-                    velocityX: 2, //initial velocities
+                    radius: 8,
+                    velocityX: (Math.random() < 0.5 ? -1 : 1) * Math.random() * 2, //initial velocities
                     velocityY: -2
                 };
             }
-        }, 2);
+        }, 20);
 
     }
 
+    function resetBall() {
+        ball = null;
+        speed = 2;
+        if (lives > 0) {
+            setTimeout(() => {
+                initializeBall(paddle);
+            }, 1000);
+        } else {
+            gameOver();
+        }
+    }
+
     function animateBall() {
-        ball.x += ball.velocityX;
-        ball.y += ball.velocityY;
+        ball.x += ball.velocityX * speed;
+        ball.y += ball.velocityY * speed;
 
         if (ball.x < 8 || ball.x + 8 > canvas.width) {
             ball.velocityX = -ball.velocityX;
-        } else
-            if (ball.y < 8) {
-                ball.velocityY = -ball.velocityY;
-            } else
-                if (ball.y > canvas.height) {  // need working here
-                    lives--;
-                    ball = null;
-                    initializePaddle();
-                }
-
-        if (ball.x > paddle.x && ball.x < paddle.x + paddle.width && ball.y + 8 > paddle.y) {
+        }
+        if (ball.y < 8) {
             ball.velocityY = -ball.velocityY;
+        }
+        if (ball.y > canvas.height) {
+            lives--;
+            resetBall();
+            return;
+        }
+
+        if (ball.x > paddle.x && ball.x < paddle.x + paddle.width && ball.y + 8 > paddle.y) { // ball hits the paddle
+            ball.velocityY = -Math.abs(ball.velocityY);
+
+            let random = (Math.random() < 0.5 ? -1 : 1) * Math.random() * 2;
+            ball.velocityX = random;
         }
 
         for (let i = 0; i < brickArray.length; i++) {
@@ -178,6 +203,9 @@ window.onload = function () {
                 ball.velocityY = -ball.velocityY;
                 brickArray[i].break = true;
                 score += brickArray[i].points;
+                brickArray.splice(i, 1);
+
+                speed = speed + score / 10000;
             }
         }
 
@@ -203,12 +231,12 @@ window.onload = function () {
             animateBall();
         }
 
-        if (lives == 0)  // game over condition
+        if (lives == 0){  // game over condition
             gameOver();
+        }
 
-        if (brickArray.length == 0) {  // next lvl condition
-            level++;
-            startGame();
+        if (brickArray.length == 0) {  
+            nextLevel();
         }
 
         requestAnimationFrame(game);
